@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox - Voice Mode</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+        .email-item {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .email-from { font-weight: 600; color: #333; }
+        .email-date { color: #666; font-size: 14px; }
+        .email-subject { font-weight: 600; color: #667eea; margin-bottom: 8px; }
+        .email-body { color: #666; margin-top: 10px; }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-logout {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        }
+        .microphone {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .microphone:hover { transform: scale(1.1); }
+        .microphone.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(76, 175, 80, 0); }
+        }
+        .nav-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📥 Inbox</h1>
+        <div class="microphone" id="micButton" onclick="toggleListening()">🎤</div>
+        <div class="status" id="status">Loading emails...</div>
+        <div id="emailList"></div>
+
+        <div class="nav-buttons">
+            <button onclick="location.href='/voice/menu'" class="btn">🏠 Main Menu</button>
+            <button onclick="logout()" class="btn btn-logout">🚪 Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let emails = [];
+        let currentIndex = 0;
+        let recognition;
+        let isListening = false;
+        let autoReadInProgress = false;
+        let autoReadStopped = false;
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported. Please use Chrome or Edge.');
+                return false;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+
+                logVoice('user', transcript);
+
+                // Check for navigation commands
+                if (transcript.includes('go back') || transcript.includes('main menu') || transcript.includes('back to menu')) {
+                    goBackToMenu();
+                    return;
+                }
+
+                // Check for read commands (e.g., "read email 1", "read first email")
+                if (transcript.includes('read')) {
+                    const emailIndex = 0; // Default to first email
+                    if (emails.length > emailIndex) {
+                        readEmail(emailIndex);
+                    }
+                }
+            };
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                document.getElementById('status').textContent = '🎤 Listening... Say go back to return to menu';
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('micButton').classList.remove('listening');
+            };
+
+            return true;
+        }
+
+        function toggleListening() {
+            if (!recognition && !initSpeechRecognition()) return;
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function logVoice(type, text) {
+            // Send voice log to backend terminal
+            fetch('/api/log_voice', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    text: text,
+                    page: 'inbox'
+                })
+            }).catch(err => console.error('Log error:', err));
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+            logVoice('system', text);
+            return utterance;
+        }
+
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+            autoReadStopped = true;
+            autoReadInProgress = false;
+            document.getElementById('status').textContent = 'Auto-read stopped. Press spacebar to continue or say a command.';
+            speak('Auto-read stopped.');
+        }
+
+        function goBackToMenu() {
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+
+            speak('Going back to main menu.');
+            setTimeout(() => {
+                window.location.href = '/voice/menu';
+            }, 1000);
+        }
+
+        function loadInbox() {
+            fetch('/api/voice_inbox')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.emails.length > 0) {
+                        emails = data.emails;
+                        const totalCount = data.total_count || emails.length;
+                        document.getElementById('status').textContent = `You have ${totalCount} emails in inbox. Auto-reading first 3...`;
+                        speak(`You have ${totalCount} emails in inbox.`);
+                        displayEmails();
+
+                        // Auto-read first 3 emails after a short delay
+                        setTimeout(() => {
+                            autoReadEmails();
+                        }, 2000);
+                    } else {
+                        document.getElementById('status').textContent = 'Your inbox is empty';
+                        speak('Your inbox is empty.');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = 'Error loading emails';
+                    speak('Error loading emails.');
+                });
+        }
+
+        function autoReadEmails() {
+            if (autoReadStopped) return;
+
+            autoReadInProgress = true;
+            const maxToRead = Math.min(3, emails.length);
+
+            function readNextEmail(index) {
+                if (index >= maxToRead || autoReadStopped) {
+                    autoReadInProgress = false;
+                    document.getElementById('status').textContent = `Read ${index} emails. Press spacebar for voice commands.`;
+                    speak('Auto-read complete. Press spacebar for voice commands.');
+                    return;
+                }
+
+                const email = emails[index];
+                const emailNum = index + 1;
+                const cleanBody = stripHtml(email.body || '(No message)').substring(0, 500);
+
+                document.getElementById('status').textContent = `Reading email ${emailNum} of ${maxToRead}... (Press spacebar to stop)`;
+
+                const text = `Email ${emailNum}. From ${email.from}. Subject: ${email.subject}. Message: ${cleanBody}`;
+                const utterance = speak(text);
+
+                utterance.onend = function() {
+                    if (!autoReadStopped) {
+                        // Wait 1 second before next email
+                        setTimeout(() => {
+                            readNextEmail(index + 1);
+                        }, 1000);
+                    }
+                };
+            }
+
+            readNextEmail(0);
+        }
+
+        function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function displayEmails() {
+            const list = document.getElementById('emailList');
+            list.innerHTML = '';
+
+            emails.forEach((email, index) => {
+                const item = document.createElement('div');
+                item.className = 'email-item';
+
+                // Strip HTML from email body
+                const cleanBody = stripHtml(email.body || '(No message)');
+
+                item.innerHTML = `
+                    <div class="email-header">
+                        <div class="email-from">From: ${email.from}</div>
+                        <div class="email-date">${email.date || ''}</div>
+                    </div>
+                    <div class="email-subject">Subject: ${email.subject || '(No Subject)'}</div>
+                    <div class="email-body" style="display:none; white-space: pre-wrap;" id="body-${index}"></div>
+                    <button class="btn" onclick="readEmail(${index})">👁️ Read</button>
+                `;
+
+                // Set text content separately to avoid HTML injection
+                const bodyDiv = item.querySelector(`#body-${index}`);
+                bodyDiv.textContent = cleanBody;
+
+                list.appendChild(item);
+            });
+        }
+
+        function readEmail(index) {
+            const bodyDiv = document.getElementById('body-' + index);
+            if (bodyDiv.style.display === 'none') {
+                bodyDiv.style.display = 'block';
+                speak('Email from ' + emails[index].from + '. Subject: ' + emails[index].subject + '. Message: ' + emails[index].body.substring(0, 200));
+            } else {
+                bodyDiv.style.display = 'none';
+            }
+        }
+
+        function logout() {
+            fetch('/api/logout', {method: 'POST'})
+                .then(() => {
+                    speak('Logging out.');
+                    setTimeout(() => window.location.href = '/', 1000);
+                });
+        }
+
+        // Spacebar to stop auto-read or activate listening
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault(); // Prevent page scroll
+
+                if (autoReadInProgress) {
+                    // Stop auto-reading
+                    stopSpeaking();
+                } else if (!isListening) {
+                    // Activate voice listening
+                    toggleListening();
+                }
+            }
+        });
+
+        window.onload = function() {
+            speak('Inbox page. Press spacebar to use voice. Say go back to return to main menu.');
+            loadInbox();
+        };
+    </script>
+</body>
+</html>

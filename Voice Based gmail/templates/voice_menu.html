@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Email Dashboard - Professional Voice Recognition System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --card-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --card-border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: var(--card-border);
+            box-shadow: var(--card-shadow);
+            padding: 2rem;
+            margin: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #fff, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .space-hint {
+            text-align: center;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        .voice-status {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: var(--success-color);
+            animation: pulse-indicator 2s infinite;
+        }
+
+        @keyframes pulse-indicator {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .voice-commands {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .menu-card {
+            padding: 20px 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: none;
+        }
+
+        .menu-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-card.active {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            transform: scale(1.02);
+        }
+
+        #card-start {
+            background: linear-gradient(135deg, #9b87f5 0%, #7e69d6 100%);
+        }
+
+        #card-compose {
+            background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
+        }
+
+        #card-inbox {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
+
+        #card-sent {
+            background: linear-gradient(135deg, #f0a868 0%, #e68a4f 100%);
+        }
+
+        #card-logout {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        }
+
+        .menu-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .menu-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .menu-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .menu-command {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(236, 72, 153, 0.15);
+            border: 1.5px solid rgba(236, 72, 153, 0.3);
+            padding: 1.5rem;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            background: rgba(236, 72, 153, 0.25);
+            border-color: rgba(236, 72, 153, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(45deg, var(--accent-color), #ff6b95);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-card h5 {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .feature-suggestion {
+            margin-top: 0.75rem;
+            color: var(--accent-color);
+            font-weight: 700;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .feature-suggestion.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .instructions h3 {
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .command-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .command-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .command-list li:last-child {
+            border-bottom: none;
+        }
+
+        .command-text {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .glass-card {
+                margin: 0.5rem 0;
+                padding: 1.5rem;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="glass-card">
+            <h1 class="main-title">
+                <i class="fas fa-microphone"></i> Voice Email Dashboard
+            </h1>
+            <p class="subtitle" id="welcomeMsg">Welcome! Please wait...</p>
+            <p class="space-hint">Press the spacebar to start the model.</p>
+
+            <!-- Status Indicator -->
+            <div class="voice-status">
+                <span class="status-indicator"></span>
+                <span id="status">Voice System Ready - Click microphone or say a command</span>
+            </div>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="main-content">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-play-circle"></i> Voice Commands</h3>
+                <p style="color: rgba(255, 255, 255, 0.8); font-size: 15px; margin-bottom: 25px; text-align: center;">Use natural voice commands to control your email</p>
+
+                <div class="voice-commands">
+                    <div class="menu-card" id="card-start" onclick="toggleListening()">
+                        <div class="menu-icon">🎙️</div>
+                        <div class="menu-info">
+                            <div class="menu-title">Start Voice System</div>
+                            <div class="menu-command">Click or press SPACEBAR</div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" id="card-compose" onclick="goToCompose()">
+                        <div class="menu-icon">✉️</div>
+                        <div class="menu-info">
+                            <div class="menu-title">Compose Email</div>
+                            <div class="menu-command">Say: "Compose Email"</div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" id="card-inbox" onclick="goToInbox()">
+                        <div class="menu-icon">📥</div>
+                        <div class="menu-info">
+                            <div class="menu-title">Check Inbox</div>
+                            <div class="menu-command">Say: "Check Inbox"</div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" id="card-sent" onclick="goToSent()">
+                        <div class="menu-icon">📤</div>
+                        <div class="menu-info">
+                            <div class="menu-title">Check Outbox</div>
+                            <div class="menu-command">Say: "Outbox" or "Sent Mail"</div>
+                        </div>
+                    </div>
+
+                    <div class="menu-card" id="card-logout" onclick="logout()">
+                        <div class="menu-icon">🚪</div>
+                        <div class="menu-info">
+                            <div class="menu-title">Logout</div>
+                            <div class="menu-command">Say: "Logout"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> How It Works</h3>
+
+                <div class="feature-grid">
+                    <div class="feature-card" data-suggestion="Use your voice to control and navigate the interface easily.">
+                        <div class="feature-icon">
+                            <i class="fas fa-microphone-alt"></i>
+                        </div>
+                        <h5>Voice Commands</h5>
+                        <p>Say "Compose", "Inbox", "Outbox", or "Logout"</p>
+                        <div class="feature-suggestion" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="feature-card" data-suggestion="AI analyzes input and provides intelligent responses.">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h5>AI Recognition</h5>
+                        <p>Advanced speech-to-text with Whisper AI</p>
+                        <div class="feature-suggestion" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="feature-card" data-suggestion="Manage, send, and organize your emails efficiently.">
+                        <div class="feature-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email Management</h5>
+                        <p>Full email management through voice</p>
+                        <div class="feature-suggestion" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <h5>Voice Feedback</h5>
+                        <p>Real-time audio responses and confirmations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Section -->
+        <div class="glass-card">
+            <div class="instructions">
+                <h3><i class="fas fa-list"></i> Voice Commands Reference</h3>
+                <ul class="command-list">
+                    <li>
+                        <span><strong>Start System:</strong> Click "Start Voice System" button</span>
+                        <span class="command-text">Activates voice recognition</span>
+                    </li>
+                    <li>
+                        <span><strong>Compose Email:</strong> Say "Compose"</span>
+                        <span class="command-text">Create and send new email</span>
+                    </li>
+                    <li>
+                        <span><strong>Check Inbox:</strong> Say "Inbox"</span>
+                        <span class="command-text">View received emails</span>
+                    </li>
+                    <li>
+                        <span><strong>Check Outbox:</strong> Say "Outbox"</span>
+                        <span class="command-text">View sent emails</span>
+                    </li>
+                    <li>
+                        <span><strong>Exit System:</strong> Say "Logout"</span>
+                        <span class="command-text">Safely end session</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let username = null;
+
+        // Toggle suggestions for feature cards
+        (function(){
+            function hideAllSuggestions() {
+                document.querySelectorAll('.feature-card .feature-suggestion.visible').forEach(function(el){
+                    el.classList.remove('visible');
+                    el.setAttribute('aria-hidden','true');
+                });
+            }
+
+            document.querySelectorAll('.feature-card[data-suggestion]').forEach(function(card){
+                card.addEventListener('click', function(e){
+                    var suggestionText = card.getAttribute('data-suggestion') || '';
+                    var suggestionEl = card.querySelector('.feature-suggestion');
+
+                    if (suggestionEl.classList.contains('visible')) {
+                        suggestionEl.classList.remove('visible');
+                        suggestionEl.setAttribute('aria-hidden','true');
+                        return;
+                    }
+
+                    hideAllSuggestions();
+                    if (suggestionText.trim() !== '') {
+                        suggestionEl.textContent = suggestionText;
+                        suggestionEl.classList.add('visible');
+                        suggestionEl.setAttribute('aria-hidden','false');
+                    }
+                });
+            });
+        })();
+
+        // Check if user is logged in
+        fetch('/api/voice_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.logged_in) {
+                    username = data.username;
+                    document.getElementById('welcomeMsg').textContent = 'Welcome, ' + username + '!';
+                    speak('Welcome ' + username + '. Main menu. You have four options. Compose Email. Check Inbox. Check Sent Mail. Logout. Please say your choice.');
+                } else {
+                    speak('Please login first.');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }
+            });
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported. Please use Chrome or Edge.');
+                return false;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('status').innerHTML = '🎤 Listening... Speak your choice';
+            };
+
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript.toLowerCase().trim();
+                document.getElementById('status').innerHTML = 'You said: ' + command;
+                processCommand(command);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech error:', event.error);
+                if (event.error === 'not-allowed') {
+                    document.getElementById('status').innerHTML = '❌ Microphone access denied';
+                } else {
+                    document.getElementById('status').innerHTML = 'Error: ' + event.error;
+                }
+                stopListening();
+            };
+
+            recognition.onend = function() {
+                stopListening();
+            };
+
+            return true;
+        }
+
+        function toggleListening() {
+            if (!recognition && !initSpeechRecognition()) return;
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+        }
+
+        function logVoice(type, text) {
+            fetch('/api/log_voice', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    text: text,
+                    page: 'menu'
+                })
+            }).catch(err => console.error('Log error:', err));
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            window.speechSynthesis.speak(utterance);
+            logVoice('system', text);
+        }
+
+        function processCommand(command) {
+            logVoice('user', command);
+            document.querySelectorAll('.menu-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            if (command.includes('compose')) {
+                document.getElementById('card-compose').classList.add('active');
+                speak('Opening compose email page.');
+                setTimeout(goToCompose, 1500);
+            }
+            else if (command.includes('inbox')) {
+                document.getElementById('card-inbox').classList.add('active');
+                speak('Opening inbox page.');
+                setTimeout(goToInbox, 1500);
+            }
+            else if (command.includes('sent') || command.includes('outbox')) {
+                document.getElementById('card-sent').classList.add('active');
+                speak('Opening sent mail page.');
+                setTimeout(goToSent, 1500);
+            }
+            else if (command.includes('logout')) {
+                document.getElementById('card-logout').classList.add('active');
+                speak('Logging out. Thank you.');
+                setTimeout(logout, 1500);
+            }
+            else {
+                speak('Invalid command. Please say: compose email, check inbox, check sent mail, or logout.');
+                document.getElementById('status').innerHTML = 'Invalid command. Try again.';
+            }
+        }
+
+        function goToCompose() {
+            window.location.href = '/voice/compose';
+        }
+
+        function goToInbox() {
+            window.location.href = '/voice/inbox';
+        }
+
+        function goToSent() {
+            window.location.href = '/voice/sent';
+        }
+
+        function logout() {
+            fetch('/api/logout', {method: 'POST'})
+                .then(() => {
+                    window.location.href = '/';
+                });
+        }
+
+        // Spacebar to activate listening
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !isListening) {
+                event.preventDefault();
+                toggleListening();
+            }
+        });
+
+        // Auto-start listening after welcome message
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (!isListening) {
+                    initSpeechRecognition();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose Email - Voice Mode</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .microphone {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .microphone:hover { transform: scale(1.1); }
+        .microphone.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(76, 175, 80, 0); }
+        }
+        .status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-logout {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        }
+        .nav-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✉️ Compose Email</h1>
+
+        <div class="microphone" id="micButton" onclick="toggleListening()">🎤</div>
+        <div class="status" id="status">Click microphone to speak or type below</div>
+
+        <form id="emailForm">
+            <div class="form-group">
+                <label>To:</label>
+                <input type="email" id="toEmail" placeholder="recipient@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Subject:</label>
+                <input type="text" id="subject" placeholder="Email subject" required>
+            </div>
+            <div class="form-group">
+                <label>Message:</label>
+                <textarea id="message" placeholder="Your message" required></textarea>
+            </div>
+            <div style="text-align: center;">
+                <button type="button" onclick="sendEmail()" class="btn">📤 Send Email</button>
+            </div>
+        </form>
+
+        <div class="nav-buttons">
+            <button onclick="location.href='/voice/menu'" class="btn">🏠 Main Menu</button>
+            <button onclick="logout()" class="btn btn-logout">🚪 Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let currentField = 'to'; // to, subject, message
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Speech recognition not supported. Please use Chrome or Edge.');
+                return false;
+            }
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const lowerTranscript = transcript.toLowerCase();
+
+                logVoice('user', transcript);
+
+                // Check for navigation commands first
+                if (lowerTranscript.includes('go back') || lowerTranscript.includes('main menu') || lowerTranscript.includes('back to menu')) {
+                    goBackToMenu();
+                    return;
+                }
+
+                // Check for send command
+                if (lowerTranscript.includes('send')) {
+                    sendEmail();
+                    return;
+                }
+
+                // Field-specific input
+                if (currentField === 'to') {
+                    const email = convertToEmail(transcript);
+                    document.getElementById('toEmail').value = email;
+                    speak('Email address set. Now say the subject.');
+                    currentField = 'subject';
+                } else if (currentField === 'subject') {
+                    document.getElementById('subject').value = transcript;
+                    speak('Subject set. Now say your message.');
+                    currentField = 'message';
+                } else if (currentField === 'message') {
+                    document.getElementById('message').value = transcript;
+                    speak('Message set. Click send or say send to send the email.');
+                }
+            };
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                document.getElementById('status').textContent = '🎤 Listening...';
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('micButton').classList.remove('listening');
+                document.getElementById('status').textContent = 'Click microphone to speak';
+            };
+
+            return true;
+        }
+
+        function toggleListening() {
+            if (!recognition && !initSpeechRecognition()) return;
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                if (currentField === 'to') {
+                    speak('Say the receiver email address.');
+                } else if (currentField === 'subject') {
+                    speak('Say the subject.');
+                } else {
+                    speak('Say your message.');
+                }
+                recognition.start();
+            }
+        }
+
+        function convertToEmail(text) {
+            return text.toLowerCase()
+                .replace(/ at /g, '@')
+                .replace(/ dot /g, '.')
+                .replace(/ /g, '');
+        }
+
+        function logVoice(type, text) {
+            // Send voice log to backend terminal
+            fetch('/api/log_voice', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    text: text,
+                    page: 'compose'
+                })
+            }).catch(err => console.error('Log error:', err));
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+            logVoice('system', text);
+        }
+
+        function goBackToMenu() {
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+
+            speak('Going back to main menu.');
+            setTimeout(() => {
+                window.location.href = '/voice/menu';
+            }, 1000);
+        }
+
+        function sendEmail() {
+            const to = document.getElementById('toEmail').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            if (!to || !subject || !message) {
+                speak('Please fill in all fields.');
+                return;
+            }
+
+            speak('Sending email. Please wait.');
+            document.getElementById('status').textContent = 'Sending...';
+
+            fetch('/api/send_email', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({to: to, subject: subject, message: message})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    speak('Email sent successfully!');
+                    document.getElementById('status').textContent = '✅ Email sent!';
+                    document.getElementById('emailForm').reset();
+                    currentField = 'to';
+                } else {
+                    speak('Failed to send email. ' + data.message);
+                    document.getElementById('status').textContent = '❌ Failed: ' + data.message;
+                }
+            });
+        }
+
+        function logout() {
+            fetch('/api/logout', {method: 'POST'})
+                .then(() => {
+                    speak('Logging out.');
+                    setTimeout(() => window.location.href = '/', 1000);
+                });
+        }
+
+        // Spacebar to activate listening
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !isListening) {
+                event.preventDefault(); // Prevent page scroll
+                toggleListening();
+            }
+        });
+
+        window.onload = function() {
+            speak('Compose email page. Press spacebar to use voice. Say go back to return to main menu.');
+        };
+    </script>
+</body>
+</html>

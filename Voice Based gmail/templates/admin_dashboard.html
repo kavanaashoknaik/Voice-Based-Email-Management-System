@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Voice Email System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid #434343;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #434343;
+        }
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 12px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        .message.error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+        .message.success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .users-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+        .users-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            color: #666;
+        }
+        .users-table tr:hover {
+            background: #f8f9fa;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-admin {
+            background: #434343;
+            color: white;
+        }
+        .badge-user {
+            background: #667eea;
+            color: white;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Admin Dashboard</h1>
+            <p>Manage users and system settings</p>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Add New User Card -->
+        <div class="card">
+            <h2>➕ Add New User</h2>
+
+            <div class="info-box">
+                <strong>ℹ️ Gmail App Password Setup:</strong>
+                To add a user with 2-factor authentication enabled:
+                <ol style="margin-top: 10px; margin-left: 20px;">
+                    <li>Go to Google Account settings</li>
+                    <li>Enable 2-Step Verification</li>
+                    <li>Generate App Password (Settings → Security → App Passwords)</li>
+                    <li>Copy the 16-character app password and paste below</li>
+                </ol>
+            </div>
+
+            <form id="addUserForm" onsubmit="handleAddUser(event)">
+                <div class="form-group">
+                    <label for="new_username">Username *</label>
+                    <input type="text" id="new_username" required placeholder="e.g., john">
+                    <small>Voice password for the user to login</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password">Voice Password *</label>
+                    <input type="password" id="new_password" required placeholder="e.g., 1234">
+                    <small>Password user will speak or type during login</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_gmail">Gmail Address *</label>
+                    <input type="email" id="new_gmail" required placeholder="e.g., user@gmail.com">
+                    <small>User's Gmail email address</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_app_password">Gmail App Password *</label>
+                    <input type="text" id="new_app_password" required placeholder="e.g., abcd efgh ijkl mnop">
+                    <small>16-character app password from Google (with or without spaces)</small>
+                </div>
+
+                <button type="submit" class="btn">Add User</button>
+                <button type="button" onclick="document.getElementById('addUserForm').reset()" class="btn btn-secondary">Clear Form</button>
+            </form>
+        </div>
+
+        <!-- User List Card -->
+        <div class="card">
+            <h2>👥 Registered Users</h2>
+            <table class="users-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Gmail Address</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: #999;">
+                            Loading users...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="card">
+            <h2>⚙️ Admin Actions</h2>
+            <button onclick="loadUsers()" class="btn btn-secondary">🔄 Refresh User List</button>
+            <button onclick="logout()" class="btn btn-danger">🚪 Logout</button>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = 'message ' + type;
+            messageDiv.style.display = 'block';
+            window.scrollTo(0, 0);
+
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function handleAddUser(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('new_username').value;
+            const password = document.getElementById('new_password').value;
+            const gmail = document.getElementById('new_gmail').value;
+            const appPassword = document.getElementById('new_app_password').value;
+
+            fetch('/api/admin/add_user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    gmail_address: gmail,
+                    gmail_app_password: appPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('✅ User added successfully!', 'success');
+                    document.getElementById('addUserForm').reset();
+                    loadUsers();
+                } else {
+                    showMessage('❌ ' + (data.message || 'Failed to add user'), 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('❌ Error adding user. Please try again.', 'error');
+            });
+        }
+
+        function loadUsers() {
+            fetch('/api/admin/users')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('usersTableBody');
+
+                    if (data.success && data.users.length > 0) {
+                        tbody.innerHTML = data.users.map(user => `
+                            <tr>
+                                <td><strong>${user.username}</strong></td>
+                                <td>${user.gmail_address}</td>
+                                <td>
+                                    <span class="badge ${user.username === 'admin' ? 'badge-admin' : 'badge-user'}">
+                                        ${user.username === 'admin' ? 'Admin' : 'User'}
+                                    </span>
+                                </td>
+                                <td>${user.is_active ? '✅ Active' : '❌ Inactive'}</td>
+                                <td>
+                                    ${user.username !== 'admin' ?
+                                        `<button onclick="deleteUser('${user.username}')" class="btn btn-danger" style="padding: 6px 15px; font-size: 13px;">Delete</button>`
+                                        : '<em style="color: #999;">Protected</em>'}
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 30px; color: #999;">
+                                    No users found
+                                </td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    showMessage('❌ Error loading users', 'error');
+                });
+        }
+
+        function deleteUser(username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+                return;
+            }
+
+            fetch('/api/admin/delete_user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: username})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('✅ User deleted successfully', 'success');
+                    loadUsers();
+                } else {
+                    showMessage('❌ ' + (data.message || 'Failed to delete user'), 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('❌ Error deleting user', 'error');
+            });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                fetch('/api/admin/logout', {method: 'POST'})
+                    .then(() => {
+                        window.location.href = '/admin/login';
+                    });
+            }
+        }
+
+        // Load users on page load
+        window.onload = function() {
+            loadUsers();
+        };
+    </script>
+</body>
+</html>

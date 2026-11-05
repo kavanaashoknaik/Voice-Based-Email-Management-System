@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Email System - Professional Voice Recognition</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --card-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --card-border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            padding: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: var(--card-border);
+            box-shadow: var(--card-shadow);
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        }
+
+        .system-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #fff, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .system-subtitle {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-highlight {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--accent-color), #ff6b95);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-item h6 {
+            font-size: 0.9rem;
+            color: #fff;
+            margin: 0;
+        }
+
+        .feature-suggestion {
+            display: none;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 0.5rem;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: all 0.18s ease;
+        }
+
+        .feature-suggestion.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            padding: 18px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-create {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .btn-create:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-voice {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-voice:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(236, 72, 153, 0.4);
+        }
+
+        .app-password-note {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 10px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .divider {
+            margin: 35px 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            font-weight: 600;
+            position: relative;
+            text-align: center;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .voice-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .voice-title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .voice-desc {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 15px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .footer-note {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status {
+            display: none;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            background: #fee;
+            color: #c33;
+            text-align: center;
+        }
+
+        .status.success {
+            background: #efe;
+            color: #3c3;
+        }
+
+        .hidden { display: none; }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(240, 147, 251, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .admin-link a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-link a:hover {
+            text-decoration: underline;
+            color: #fff;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2); }
+        }
+
+        @media (max-width: 600px) {
+            .login-card { padding: 2rem; margin: 1rem; }
+            .btn { padding: 16px 25px; font-size: 16px; }
+            .system-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="system-title">
+                    <i class="fas fa-microphone"></i> Voice Email System
+                </h1>
+                <p class="system-subtitle">Professional Voice Recognition for Email Management</p>
+            </div>
+
+            <!-- Feature Highlights -->
+            <div class="feature-highlight">
+                <div class="feature-item" data-suggestion="Use your voice to control and navigate the interface easily.">
+                    <div class="feature-icon">
+                        <i class="fas fa-microphone-alt"></i>
+                    </div>
+                    <h6>Voice Commands</h6>
+                    <div class="feature-suggestion" aria-hidden="true"></div>
+                </div>
+                <div class="feature-item" data-suggestion="AI analyzes input and provides intelligent responses.">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h6>AI Recognition</h6>
+                    <div class="feature-suggestion" aria-hidden="true"></div>
+                </div>
+                <div class="feature-item" data-suggestion="Manage, send, and organize your emails efficiently.">
+                    <div class="feature-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h6>Email Management</h6>
+                    <div class="feature-suggestion" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+
+            <!-- Registration Form -->
+            <div class="section" id="registrationSection">
+                <div class="section-header">Create New Account</div>
+                <form id="registrationForm" onsubmit="handleRegistration(event)">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Username</label>
+                        <input type="text" id="reg_username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="reg_password" placeholder="Enter password" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Gmail Address</label>
+                        <input type="email" id="reg_email" placeholder="your.email@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Gmail App Password</label>
+                        <input type="password" id="reg_app_password" placeholder="16-character app password" required>
+                    </div>
+                    <p class="app-password-note">Use your Gmail app password, not your regular password</p>
+                    <button type="submit" class="btn btn-create">
+                        <span><i class="fas fa-user-plus"></i></span>
+                        Register Account
+                    </button>
+                </form> 
+            </div>
+
+            <!-- Divider -->
+            <div class="divider">OR</div>
+
+            <!-- Voice Login Section -->
+            <div class="voice-section">
+                <div class="voice-title">
+                    <span>🎤</span>
+                    Voice Login
+                </div>
+                <p class="voice-desc">Login using voice commands for hands-free access</p>
+                <button class="btn btn-voice" id="startBtn" onclick="startVoiceSession()">
+                    <span>🎙️</span>
+                    Login with Voice
+                </button>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="footer-note">
+                <span>💡</span>
+                <span>Say "Compose", "Inbox", "Outbox", or "Logout" to control your emails with voice commands</span>
+            </div>
+
+            <!-- Hidden elements for voice functionality -->
+            <div class="hidden">
+                <div id="micButton"></div>
+                <div id="statusText"></div>
+                <div id="transcript"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle suggestions for feature items
+        (function(){
+            function hideAllSuggestions() {
+                document.querySelectorAll('.feature-item .feature-suggestion.visible').forEach(function(el){
+                    el.classList.remove('visible');
+                    el.setAttribute('aria-hidden','true');
+                });
+            }
+
+            document.querySelectorAll('.feature-item[data-suggestion]').forEach(function(item){
+                item.addEventListener('click', function(e){
+                    var suggestionText = item.getAttribute('data-suggestion') || '';
+                    var suggestionEl = item.querySelector('.feature-suggestion');
+
+                    if (suggestionEl.classList.contains('visible')) {
+                        suggestionEl.classList.remove('visible');
+                        suggestionEl.setAttribute('aria-hidden','true');
+                        return;
+                    }
+
+                    hideAllSuggestions();
+                    if (suggestionText.trim() !== '') {
+                        suggestionEl.textContent = suggestionText;
+                        suggestionEl.classList.add('visible');
+                        suggestionEl.setAttribute('aria-hidden','false');
+                    }
+                });
+            });
+        })();
+
+        // Registration Handler
+        function handleRegistration(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('reg_username').value;
+            const password = document.getElementById('reg_password').value;
+            const email = document.getElementById('reg_email').value;
+            const appPassword = document.getElementById('reg_app_password').value.replace(/\s/g, '');
+
+            // Show loading state
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Creating account...';
+            statusDiv.className = 'status';
+            statusDiv.style.display = 'block';
+
+            // Create user via API
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    gmail_address: email,
+                    gmail_app_password: appPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success
+                    statusDiv.textContent = '✅ Successfully registered! Press spacebar to login with voice.';
+                    statusDiv.className = 'status success';
+
+                    // Voice feedback
+                    speak('Successfully registered! Press the spacebar to login with voice.');
+
+                    // Clear form
+                    document.getElementById('registrationForm').reset();
+
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    // Error
+                    statusDiv.textContent = '❌ ' + (data.message || 'Registration failed');
+                    statusDiv.className = 'status';
+                    speak('Registration failed. ' + (data.message || 'Please try again.'));
+                }
+            })
+            .catch(error => {
+                statusDiv.textContent = '❌ Error: Could not connect to server';
+                statusDiv.className = 'status';
+                speak('Registration error. Please try again.');
+            });
+        }
+
+        // Voice login functionality
+        let recognition;
+        let isListening = false;
+        let currentState = 'idle';
+        let sessionData = {
+            username: null,
+            loginAttempts: 0
+        };
+
+        // Spacebar to start voice login
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && currentState === 'idle') {
+                event.preventDefault();
+                startVoiceSession();
+            }
+        });
+
+        function startListening() {
+            if (!recognition && !initSpeechRecognition()) {
+                return;
+            }
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Error starting recognition:', e);
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+
+        function logVoice(type, text) {
+            fetch('/api/log_voice', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    text: text,
+                    page: 'login'
+                })
+            }).catch(err => console.error('Log error:', err));
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.1; // Faster speech
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            window.speechSynthesis.speak(utterance);
+
+            logVoice('system', text);
+
+            utterance.onend = function() {
+                setTimeout(() => {
+                    if (currentState !== 'idle') {
+                        startListening();
+                    }
+                }, 200); // Reduced delay from 500ms to 200ms
+            };
+        }
+
+        function updateStatus(text) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = text;
+            statusDiv.style.display = 'block';
+        }
+
+        function showMessage(text, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = text;
+            statusDiv.className = 'status ' + (isSuccess ? 'success' : '');
+            statusDiv.style.display = 'block';
+        }
+
+        function startVoiceSession() {
+            if (!initSpeechRecognition()) {
+                return;
+            }
+
+            currentState = 'login_username';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').innerHTML = '<span>🎤</span> Listening...';
+
+            speak('Welcome to Voice Email System. Please say your username.');
+            updateStatus('Waiting for username...');
+        }
+
+        function processVoiceCommand(command) {
+            if (currentState === 'login_username') {
+                sessionData.username = command.trim();
+                console.log('Username captured:', sessionData.username);
+                speak('I heard username as ' + sessionData.username + '. Now please say your password clearly.');
+                currentState = 'login_password';
+                updateStatus('Username: ' + sessionData.username + ' - Waiting for password...');
+            }
+            else if (currentState === 'login_password') {
+                const password = command.trim();
+                console.log('Password captured (length):', password.length);
+
+                if (!password || password.length < 1) {
+                    speak('Password not received. Please say your password again.');
+                    updateStatus('Password not detected. Please try again...');
+                    // Stay in password state
+                    setTimeout(() => {
+                        startListening();
+                    }, 1500);
+                    return;
+                }
+
+                speak('Password received. Verifying your credentials.');
+                updateStatus('Verifying login...');
+                verifyLogin(sessionData.username, password);
+            }
+        }
+
+        function verifyLogin(username, password) {
+            fetch('/api/voice_login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: username, password: password})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    speak('Login successful. Welcome ' + username + '. Redirecting to main menu.');
+                    showMessage('✅ Logged in as ' + username, true);
+                    setTimeout(() => { window.location.href = '/voice/menu'; }, 2000);
+                } else {
+                    sessionData.loginAttempts++;
+                    if (sessionData.loginAttempts < 3) {
+                        speak('Invalid credentials. Please say your username again.');
+                        currentState = 'login_username';
+                        showMessage('Login failed. Try again.', false);
+                    } else {
+                        speak('Maximum login attempts reached. Goodbye.');
+                        resetSession();
+                    }
+                }
+            })
+            .catch(error => {
+                speak('Login error. Please try again.');
+                currentState = 'login_username';
+                showMessage('Login error. Please try again.', false);
+            });
+        }
+
+        function resetSession() {
+            currentState = 'idle';
+            sessionData = {username: null, loginAttempts: 0};
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').innerHTML = '<span>🎙️</span> Login with Voice';
+            stopListening();
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                showMessage('Speech recognition not supported in this browser. Please use Chrome or Edge.', false);
+                return false;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true; // Show interim results for faster feedback
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 5; // Get more alternatives for better accuracy
+
+            recognition.onstart = function() {
+                isListening = true;
+                if (currentState === 'login_password') {
+                    updateStatus('🎤 Listening for password... Speak clearly');
+                } else {
+                    updateStatus('🎤 Listening... Speak now');
+                }
+            };
+
+            recognition.onresult = function(event) {
+                let transcript = '';
+
+                // Get the best final result
+                if (event.results && event.results.length > 0) {
+                    // Use the last result (most complete)
+                    const lastResult = event.results[event.results.length - 1];
+
+                    // Only process if it's a final result (not interim)
+                    if (lastResult.isFinal) {
+                        transcript = lastResult[0].transcript;
+
+                        // For password, don't convert to lowercase to preserve case
+                        if (currentState === 'login_password') {
+                            transcript = transcript.trim();
+                            console.log('Password transcript (raw):', transcript);
+                        } else {
+                            transcript = transcript.toLowerCase().trim();
+                        }
+
+                        console.log('Final transcript:', transcript);
+                    } else {
+                        // Show interim results for user feedback
+                        transcript = lastResult[0].transcript;
+                        console.log('Interim:', transcript);
+                        updateStatus('🎤 Hearing: ' + transcript);
+                        return; // Don't process interim results
+                    }
+                }
+
+                if (transcript) {
+                    logVoice('user', transcript);
+                    processVoiceCommand(transcript);
+                } else {
+                    console.warn('Empty transcript received');
+                    if (currentState === 'login_password') {
+                        speak('No input detected. Please say your password again.');
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500); // Reduced from 2000ms
+                    }
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+
+                if (event.error === 'not-allowed') {
+                    showMessage('Microphone access denied. Please allow microphone access.', false);
+                    speak('Microphone access denied.');
+                } else if (event.error === 'no-speech') {
+                    console.log('No speech detected');
+                    if (currentState === 'login_password') {
+                        speak('No speech detected. Please say your password again.');
+                        updateStatus('No speech detected. Trying again...');
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500); // Reduced from 2000ms
+                    } else {
+                        showMessage('No speech detected. Please try again.', false);
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500);
+                    }
+                } else if (event.error === 'audio-capture') {
+                    showMessage('No microphone found. Please check your microphone.', false);
+                    speak('No microphone found.');
+                } else {
+                    console.log('Recognition error:', event.error);
+                    if (currentState === 'login_password') {
+                        speak('Error detected. Please say your password again.');
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500); // Reduced from 2000ms
+                    }
+                }
+
+                stopListening();
+            };
+
+            recognition.onend = function() {
+                stopListening();
+            };
+
+            return true;
+        }
+
+        let welcomeSpoken = false;
+
+        function speakWelcome() {
+            if (!welcomeSpoken) {
+                welcomeSpoken = true;
+                speak('Welcome to Voice Based Email System for Visually Impaired Users. Press spacebar to login with voice, or fill out the registration form to create a new account.');
+            }
+        }
+
+        window.onload = function() {
+            // Try to speak immediately
+            speakWelcome();
+
+            // If browser blocks autoplay, speak on first user interaction
+            document.addEventListener('click', speakWelcome, { once: true });
+            document.addEventListener('keydown', speakWelcome, { once: true });
+        };
+    </script>
+</body>
+</html>
